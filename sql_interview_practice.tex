@@ -1,0 +1,402 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.85in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={SQL Technical Interview Practice Exam},
+    pdfpagemode=FullScreen,
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\small SQL Technical Interview Practice}
+\lhead{\small 10 Practice Questions \& Benchmark Outputs}
+\cfoot{\thepage}
+
+\title{\Huge \textbf{SQL Technical Interview Practice Exam}\\\Large 10 Real-World Interview Problems \& Target Execution Outputs}
+\author{\textbf{Target Database:} \texttt{test-company.db}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\colorbox{gray!15}{
+\parbox{0.95\textwidth}{
+\vspace{0.2cm}
+\textbf{\large Practice Instructions \& Database Schema} \\
+Use this practice document to write and test your SQL queries independently. Compare your query results against the verified benchmark outputs provided for each question.
+
+\begin{itemize}
+    \item \textbf{employees} (2,500 records): \texttt{id, name, email, salary, status, hire\_date, department\_id, pay\_type\_id, salary\_grade\_id}
+    \item \textbf{departments} (10 records): \texttt{id, department\_name}
+    \item \textbf{pay\_types} (2 records): \texttt{id, description} (\textit{Hourly}, \textit{Salary})
+    \item \textbf{salary\_grades} (5 records): \texttt{id, description, long\_text}
+    \item \textbf{customers} (100 records): \texttt{id, company\_name, representative\_id}
+    \item \textbf{transactions} (5,000 records): \texttt{id, customer\_id, service\_type, transaction\_type, sales\_type, net\_amount}
+\end{itemize}
+\vspace{0.2cm}
+}
+}
+\end{center}
+
+\vspace{0.3cm}
+\tableofcontents
+\newpage
+
+\section{Practice Questions \& Benchmark Outputs}
+
+\subsection*{Question 1: Basic Aggregation & Filtering: Active Employee Count and Average Salary}
+\addcontentsline{toc}{subsection}{Question 1: Basic Aggregation & Filtering: Active Employee Count and Average Salary}
+
+\noindent\textbf{Tested SQL Concepts:} Basic Aggregations (\texttt{COUNT}, \texttt{AVG}, \texttt{ROUND}), \texttt{WHERE} filter, \texttt{JOIN}, \texttt{GROUP BY}
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Write an SQL query to retrieve the total count of currently \textbf{Active} employees and their average salary (rounded to 2 decimal places) grouped by their pay type (e.g., Hourly vs Salary). Sort the result by average salary in descending order.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Ensure you filter active records prior to grouping and join with the \texttt{pay\_types} table to retrieve descriptive names.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{ccc}
+\toprule
+\textbf{pay\_type} & \textbf{active\_employee\_count} & \textbf{avg\_salary} \\
+\midrule
+Salary & 619 & 115371.58 \\
+Hourly & 624 & 112674.99 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 2: Aggregated Filtering: High-Headcount Departments via HAVING}
+\addcontentsline{toc}{subsection}{Question 2: Aggregated Filtering: High-Headcount Departments via HAVING}
+
+\noindent\textbf{Tested SQL Concepts:} \texttt{GROUP BY}, \texttt{HAVING} clause vs. \texttt{WHERE} clause, Multi-column Aggregations (\texttt{MIN}, \texttt{MAX})
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Find all company departments that have \textbf{at least 125 active employees}. For each qualifying department, output the department name, the number of active employees, the lowest salary, and the highest salary in that department. Sort descending by employee count.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Remember the order of operations: filter for active status before grouping, then use \texttt{HAVING} to filter groups by headcount.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{department\_name} & \textbf{active\_employee\_count} & \textbf{min\_salary} & \textbf{max\_salary} \\
+\midrule
+Marketing & 136 & 31223 & 199411 \\
+Finance & 132 & 31476 & 198971 \\
+Executive & 131 & 30189 & 198537 \\
+Communications & 131 & 30002 & 199563 \\
+Customer Service & 125 & 30002 & 199297 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 3: Subqueries & CTEs: Employees Earning Above Department Average}
+\addcontentsline{toc}{subsection}{Question 3: Subqueries & CTEs: Employees Earning Above Department Average}
+
+\noindent\textbf{Tested SQL Concepts:} Common Table Expressions (\texttt{WITH}), Two-stage Aggregations, Conditional Join Matching
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Identify active employees whose salary exceeds the average salary of their specific department. Return the employee name, department name, employee salary, and the department average salary (rounded to 2 decimals). Order by employee salary descending and limit output to the top 5.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Consider precomputing department average salaries using a CTE (\texttt{WITH} clause) before joining it back to individual employee records.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{employee\_name} & \textbf{department\_name} & \textbf{salary} & \textbf{dept\_avg\_salary} \\
+\midrule
+Sofia Roberts & Information Technology & 199690 & 113535.64 \\
+Evelyn Lopez & Information Technology & 199600 & 113535.64 \\
+Ava Adams & Communications & 199563 & 108471.4 \\
+Sofia Jackson & Marketing & 199411 & 112819.71 \\
+Nora Baker & Customer Service & 199297 & 115006.68 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 4: Window Functions: Top 2 Highest-Paid Employees per Department}
+\addcontentsline{toc}{subsection}{Question 4: Window Functions: Top 2 Highest-Paid Employees per Department}
+
+\noindent\textbf{Tested SQL Concepts:} Window Functions (\texttt{DENSE\_RANK()}), \texttt{PARTITION BY}, \texttt{ORDER BY} inside window, CTE filtering
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+For each department, find the top 2 highest-paid active employees using the \texttt{DENSE\_RANK()} window function. Return the department name, employee name, salary, and their departmental rank. Display the first 10 rows sorted alphabetically by department and rank.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Window functions cannot be evaluated directly in a \texttt{WHERE} clause; wrap the ranked query in a CTE or subquery.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{department\_name} & \textbf{employee\_name} & \textbf{salary} & \textbf{salary\_rank} \\
+\midrule
+Communications & Ava Adams & 199563 & 1 \\
+Communications & Oliver Lee & 199077 & 2 \\
+Customer Service & Nora Baker & 199297 & 1 \\
+Customer Service & Leo Adams & 197888 & 2 \\
+Executive & Ava Lee & 198537 & 1 \\
+Executive & John Jackson & 197811 & 2 \\
+Finance & Levi Scott & 198971 & 1 \\
+Finance & Luca Wilson & 197295 & 2 \\
+Information Technology & Sofia Roberts & 199690 & 1 \\
+Information Technology & Evelyn Lopez & 199600 & 2 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 5: Conditional Aggregation: Pivoting Sales Channels by Service Type}
+\addcontentsline{toc}{subsection}{Question 5: Conditional Aggregation: Pivoting Sales Channels by Service Type}
+
+\noindent\textbf{Tested SQL Concepts:} Conditional Aggregation (\texttt{CASE WHEN} inside \texttt{SUM}), Cross-tabulation / Pivoting
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+For each \texttt{service\_type} in transactions, calculate the total revenue generated through 'Online' sales, 'Phone' sales, and the combined overall revenue. Round all monetary values to 2 decimal places and sort by total revenue descending.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Use \texttt{CASE WHEN sales\_type = 'Online' THEN net\_amount ELSE 0 END} inside aggregate \texttt{SUM()} functions.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{service\_type} & \textbf{online\_revenue} & \textbf{phone\_revenue} & \textbf{total\_revenue} \\
+\midrule
+Service & 2711019.43 & 2403741.7 & 5114761.13 \\
+Maintenance & 2348240.26 & 2672761.31 & 5021001.57 \\
+Consulting & 2461679.51 & 2474814.49 & 4936494.0 \\
+One-time & 2270628.11 & 2589030.31 & 4859658.42 \\
+Contract & 2302487.79 & 2444295.47 & 4746783.26 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 6: Multi-Table Relational Joins: Top Sales Representatives by Revenue}
+\addcontentsline{toc}{subsection}{Question 6: Multi-Table Relational Joins: Top Sales Representatives by Revenue}
+
+\noindent\textbf{Tested SQL Concepts:} 4-Table Inner Joins (\texttt{employees}, \texttt{departments}, \texttt{customers}, \texttt{transactions}), \texttt{COUNT(DISTINCT)}
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Find the top 5 employee account representatives whose assigned customers generated the highest total transaction revenue. Display representative name, department name, number of distinct customers managed, and total revenue generated.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Connect \texttt{employees} to \texttt{customers} and \texttt{transactions}; use \texttt{COUNT(DISTINCT c.id)} to count unique clients.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{representative\_name} & \textbf{department\_name} & \textbf{managed\_customers\_count} & \textbf{total\_revenue\_generated} \\
+\midrule
+Henry Hill & Customer Service & 1 & 288351.34 \\
+Harper Davis & Risk Management & 1 & 285654.47 \\
+Violet Taylor & Purchasing & 1 & 285309.34 \\
+Charlotte Martin & Payroll & 1 & 284945.14 \\
+Noah Williams & Purchasing & 1 & 284196.04 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 7: LEFT JOIN & Status Breakdown: Salary Grade Distributions}
+\addcontentsline{toc}{subsection}{Question 7: LEFT JOIN & Status Breakdown: Salary Grade Distributions}
+
+\noindent\textbf{Tested SQL Concepts:} \texttt{LEFT JOIN}, Handling Non-Matching Outer Data, Pivot Aggregations
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+List all salary grades (ID, tier description, and full title) along with the count of active employees, terminated employees, and total employees assigned to each grade. Ensure all salary grades are preserved in the result even if an employee count is 0.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Use \texttt{LEFT JOIN} from \texttt{salary\_grades} to \texttt{employees} and conditional counting (\texttt{COUNT(CASE WHEN ...)}).
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccccc}
+\toprule
+\textbf{grade\_id} & \textbf{grade\_tier} & \textbf{grade\_title} & \textbf{active\_count} & \textbf{terminated\_count} & \textbf{total\_employees} \\
+\midrule
+1 & Tier 1 & Worker & 375 & 350 & 725 \\
+2 & Tier 2 & Lower Management & 138 & 154 & 292 \\
+3 & Tier 3 & Middle Management & 162 & 156 & 318 \\
+4 & Tier 4 & Upper Management & 158 & 168 & 326 \\
+5 & Tier 5 & Senior Management & 410 & 429 & 839 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 8: Date Handling & Cohort Retention Rate Analysis}
+\addcontentsline{toc}{subsection}{Question 8: Date Handling & Cohort Retention Rate Analysis}
+
+\noindent\textbf{Tested SQL Concepts:} Date pattern parsing, Categorical Cohorting, Percentage Metrics, Integer-to-Float Division
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Group employees into hiring cohorts by decade (1980s, 1990s, 2000s, 2010s, 2020s). Calculate total hired, count of currently active staff, and the active retention rate percentage (\texttt{Active / Total * 100}, rounded to 2 decimal places).
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Categorize cohorts using \texttt{CASE WHEN hire\_date LIKE ...} and multiply by \texttt{100.0} to prevent integer division truncation.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{hire\_decade} & \textbf{total\_hired} & \textbf{active\_employees} & \textbf{retention\_rate\_pct} \\
+\midrule
+1980s & 87 & 46 & 52.87 \\
+1990s & 248 & 114 & 45.97 \\
+2000s & 435 & 218 & 50.11 \\
+2010s & 809 & 402 & 49.69 \\
+2020s & 920 & 463 & 50.33 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 9: Cumulative Window Functions: Running Balance of Transactions}
+\addcontentsline{toc}{subsection}{Question 9: Cumulative Window Functions: Running Balance of Transactions}
+
+\noindent\textbf{Tested SQL Concepts:} Cumulative Window Framing (\texttt{ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW}), Window \texttt{SUM()}
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+For Customer ID = 1 (NVIDIA), list their first 6 transactions ordered by transaction ID. Display transaction ID, service type, transaction type, sales type, transaction net amount, and the running cumulative total amount spent up to that transaction.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Use \texttt{SUM(net\_amount) OVER (ORDER BY id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)} to compute cumulative totals.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccccc}
+\toprule
+\textbf{transaction\_id} & \textbf{service\_type} & \textbf{transaction\_type} & \textbf{sales\_type} & \textbf{net\_amount} & \textbf{running\_total\_amount} \\
+\midrule
+37 & One-time & Buy & Phone & 9182.39 & 9182.39 \\
+88 & Consulting & Transfer & Online & 1800.85 & 10983.24 \\
+182 & Contract & Sale & Online & 7186.42 & 18169.66 \\
+231 & One-time & Transfer & Phone & 6700.46 & 24870.12 \\
+285 & One-time & Buy & Phone & 9429.71 & 34299.83 \\
+305 & Service & Transfer & Phone & 4283.43 & 38583.26 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+\subsection*{Question 10: Customer Segmentation & Quartile Analysis via NTILE()}
+\addcontentsline{toc}{subsection}{Question 10: Customer Segmentation & Quartile Analysis via NTILE()}
+
+\noindent\textbf{Tested SQL Concepts:} Statistical Ranking (\texttt{NTILE(4)}), Customer Lifetime Value Aggregation, CTE
+
+\vspace{0.15cm}
+\noindent\textbf{Problem Statement:} \\
+Divide all 100 enterprise customers into 4 spending quartiles (where Quartile 1 contains the top 25\% highest spenders) based on their total transaction volume. Display the top 5 highest-spending companies in Quartile 1.
+
+\vspace{0.2cm}
+\noindent\textbf{Hints \& Considerations:} \\
+Compute total spend per customer in a CTE, apply \texttt{NTILE(4) OVER (ORDER BY SUM(t.net\_amount) DESC)}, then filter for quartile 1.
+
+\vspace{0.3cm}
+\noindent\textbf{Expected Output (Target Reference):}
+\begin{center}
+\small
+\begin{tabular}{cccc}
+\toprule
+\textbf{customer\_id} & \textbf{company\_name} & \textbf{total\_spend} & \textbf{spending\_quartile} \\
+\midrule
+68 & AppLovin & 288351.34 & 1 \\
+4 & Microsoft & 285654.47 & 1 \\
+51 & Verizon & 285309.34 & 1 \\
+79 & Honeywell & 284945.14 & 1 \\
+30 & Coca-Cola & 284196.04 & 1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.4cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{0.4cm}
+
+
+\end{document}
